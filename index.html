@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MG ESPORTS - Tournament Platform</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #9c27b0; --secondary: #673ab7; --dark: #0f1923;
+      --light: #f8f8f8; --accent: #00e5ff; --success: #00cc66;
+      --warning: #ffcc00; --danger: #ff5252; --wallet: #00bcd4;
+      --nav-bg: #212529; --nav-active-bg: #3a3f44; --nav-active-color: #ffc107;
+      --header-bg: #2a313d;
+      --primary-yellow: #FFD700; --dark-card-bg: #1e2a38; --gray-text: #bdc3c7;
+      --border-color: #3a4a5b; --live-color: #e74c3c;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: var(--dark); color: var(--light); min-height: 100vh; padding-bottom: 80px; }
+    .top-bar { background: linear-gradient(90deg, #0a111a, var(--primary), #0a111a); padding: 15px 0; text-align: center; border-bottom: 2px solid var(--accent); }
+    .top-bar h1 { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; text-transform: uppercase; background: linear-gradient(45deg, #e040fb, #7c4dff, #00bcd4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; text-shadow: 0 0 15px rgba(156, 39, 176, 0.5); }
+    .auth-container { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 90px); padding: 20px; }
+    .auth-box { background-color: rgba(15, 25, 35, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 30px; width: 100%; max-width: 450px; animation: fadeIn 0.8s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .auth-title { font-family: 'Orbitron', sans-serif; color: var(--primary); text-align: center; margin-bottom: 25px; font-size: 2.2rem; }
+    .auth-form .form-group { margin-bottom: 20px; }
+    .auth-form label { display: block; margin-bottom: 8px; color: var(--accent); }
+    .auth-form input { width: 100%; padding: 14px; background: rgba(30, 30, 40, 0.8); border: 1px solid #333; color: white; border-radius: 8px; }
+    .auth-form button { width: 100%; padding: 14px; background: linear-gradient(45deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .auth-toggle { text-align: center; margin-top: 25px; }
+    .auth-toggle a { color: var(--primary); cursor: pointer; }
+    .error-message { color: #ff6b6b; text-align: center; min-height: 1em; margin-bottom: 10px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; display: none; }
+    .player-header { display: flex; justify-content: space-between; align-items: center; background-color: var(--header-bg); padding: 10px 15px; margin: 20px 0; border-radius: 12px; }
+    .header-info { display: flex; align-items: center; gap: 12px; }
+    #headerLogo { width: 45px; height: 45px; border-radius: 50%; border: 2px solid white; }
+    .header-info .welcome-text { font-size: 1.1rem; color: var(--light); }
+    .header-info .welcome-text strong { color: var(--accent); }
+    .header-actions { display: flex; align-items: center; gap: 20px; }
+    .header-actions .fa-bell { font-size: 1.5rem; color: var(--nav-inactive-color); cursor: pointer; }
+    #headerWallet { display: flex; align-items: center; gap: 8px; background-color: var(--nav-active-color); color: #000; padding: 8px 15px; border-radius: 50px; font-weight: bold; text-decoration: none; cursor: pointer; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--nav-bg); display: flex; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5); z-index: 100; }
+    .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; text-decoration: none; color: #aaa; padding: 10px 5px; cursor: pointer; }
+    .nav-link i { font-size: 1.5rem; margin-bottom: 4px; }
+    .nav-link span { font-size: 0.8rem; }
+    .nav-link.active { background-color: var(--nav-active-bg); color: var(--nav-active-color); border-radius: 12px; }
+    .page-section { padding: 0; margin-bottom: 30px; animation: fadeIn 0.5s; display: none; }
+    .page-section.active { display: block; }
+    .section-title { font-family: 'Orbitron', sans-serif; color: var(--primary); font-size: 2rem; margin-bottom: 25px; text-align: center; }
+    .page-wrapper { background-color: rgba(15, 25, 35, 0.8); border-radius: 15px; padding: 25px; }
+    .social-links-box { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--primary); border-radius: 15px; padding: 25px; margin-top: 30px; }
+    .social-title { text-align: center; color: var(--accent); margin-bottom: 15px; font-family: 'Orbitron', sans-serif; font-size: 1.5rem; }
+    .social-links { display: flex; flex-direction: column; gap: 15px; }
+    .social-link { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 8px; color: white; text-decoration: none; font-weight: bold; transition: transform 0.2s; }
+    .social-link:hover { transform: scale(1.03); }
+    .social-link.youtube { background-color: #FF0000; }
+    .social-link.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    .social-link.telegram { background-color: #2AABEE; }
+    .matches-container { display: grid; gap: 20px; }
+    .match-card { background-color: var(--dark-card-bg); border-radius: 10px; padding: 20px; border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; gap: 15px; }
+    .match-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .match-title { font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 10px; text-transform: capitalize; color: var(--light); }
+    .match-title .fa-gamepad { color: var(--primary-yellow); }
+    .match-status { padding: 5px 12px; border-radius: 5px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+    .match-status.upcoming { background-color: #4a5a6b; }
+    .match-status.ended { background-color: #7f8c8d; }
+    .match-status.live { background-color: var(--live-color); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
+    .match-time { display: flex; align-items: center; gap: 8px; color: var(--gray-text); font-size: 14px; }
+    .match-time i { color: var(--primary-yellow); }
+    .match-details { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 10px; padding: 15px 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
+    .detail-item h4 { font-size: 12px; color: var(--gray-text); margin-bottom: 5px; font-weight: normal; }
+    .detail-item p { font-size: 16px; font-weight: 600; color: white; }
+    .detail-item p .fa-trophy { color: var(--primary-yellow); margin-right: 5px; }
+    .match-spots { color: var(--gray-text); font-size: 14px; }
+    .match-spots .spots-highlight { color: var(--primary-yellow); font-weight: bold; }
+    .progress-bar { width: 100%; background-color: var(--border-color); height: 8px; border-radius: 4px; margin-top: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; background-color: var(--primary-yellow); border-radius: 4px; transition: width 0.5s ease; }
+    .match-action-btn { width: 100%; padding: 12px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; background-color: var(--primary-yellow); color: var(--dark); display: flex; justify-content: center; align-items: center; gap: 10px; transition: background-color 0.3s; }
+    .match-action-btn:hover { background-color: #ffd800d3; }
+    .match-action-btn.joined-btn { background-color: var(--success); color: white; }
+    .match-action-btn.get-details-btn { background-color: var(--accent); color: var(--dark); }
+    .match-action-btn:disabled { background-color: #7f8c8d; cursor: not-allowed; color: #2e2e2e; }
+    .match-action-btn:disabled:hover { background-color: #7f8c8d; }
+    .wallet-summary { text-align: center; margin-bottom: 20px; }
+    .wallet-actions { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+    .wallet-balance { font-size: 2.5rem; font-weight: bold; color: var(--wallet); margin-bottom: 10px; }
+    .add-cash-btn, .withdraw-btn { color: white; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; }
+    .add-cash-btn { background: linear-gradient(45deg, var(--wallet), #00838f); }
+    .withdraw-btn { background: linear-gradient(45deg, #ff9800, #f57c00); }
+    .transaction-history { margin-top: 30px; }
+    .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .transaction-amount.positive { color: var(--wallet); }
+    .transaction-amount.negative { color: var(--danger); }
+    .transaction-status { font-size: 0.8rem; text-transform: capitalize; }
+    .status-pending { color: var(--warning); }
+    .status-approved { color: var(--success); }
+    .status-rejected { color: #ff6b6b; }
+    .profile-info { text-align: center; }
+    .profile-info .avatar { font-size: 4rem; margin-bottom: 15px; color: var(--primary); }
+    .profile-info h3 { margin-bottom: 5px; font-size: 1.5rem; }
+    .profile-info p { color: #aaa; margin-bottom: 30px; }
+    .logout-btn { display: block; width: 180px; margin: 20px auto; padding: 12px; background: linear-gradient(45deg, #ff5252, #c62828); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); overflow-y: auto; }
+    .modal-content { background-color: #172a45; margin: 5% auto; padding: 30px; border: 2px solid var(--primary); border-radius: 15px; width: 90%; max-width: 500px; }
+    .close { color: #aaa; float: right; font-size: 32px; font-weight: bold; cursor: pointer; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; color: var(--accent); }
+    .form-group input { width: 100%; padding: 12px; background: rgba(30, 30, 40, 0.8); border: 1px solid #333; color: white; border-radius: 8px; }
+    .submit-btn { width: 100%; padding: 14px; background: linear-gradient(45deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .qr-box { background: rgba(0, 0, 0, 0.4); border: 2px dashed var(--accent); border-radius: 15px; padding: 20px; margin: 15px auto; text-align: center; }
+    .qr-box h3 { color: var(--accent); margin-bottom: 15px; }
+    .qr-box img { width: 100%; max-width: 200px; border: 2px solid white; border-radius: 10px; }
+    .upi-container { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin-top: 15px; }
+    .upi-id { font-weight: bold; color: var(--wallet); word-break: break-all; }
+    .copy-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+    .toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 15px 30px; border-radius: 50px; z-index: 10000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translate(-50%, -10px); }
+    .toast.error { background: var(--danger); }
+    #roomDetailsModal .modal-content { border-color: var(--accent); }
+    .room-detail-item { margin-bottom: 20px; }
+    .room-detail-item label { color: var(--gray-text); font-size: 0.9rem; display: block; margin-bottom: 5px; }
+    .room-detail-value { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .room-detail-value span { font-size: 1.2rem; font-weight: bold; color: var(--primary-yellow); }
+  </style>
+</head>
+<body>
+  <div class="top-bar"><h1>MG ESPORTS</h1></div>
+  <div class="auth-container" id="authContainer"> <div class="auth-box"> <div id="loginForm"><h2 class="auth-title">LOGIN</h2><form class="auth-form" id="loginFormElement"><div class="form-group"><label for="loginEmail">Email</label><input type="email" id="loginEmail" required></div><div class="form-group"><label for="loginPassword">Password</label><input type="password" id="loginPassword" required></div><div id="loginError" class="error-message"></div><button type="submit">Login</button></form><div class="auth-toggle">No account? <a id="showSignup">Sign up</a></div></div> <div id="signupForm" style="display: none;"><h2 class="auth-title">SIGN UP</h2><form class="auth-form" id="signupFormElement"><div class="form-group"><label for="signupUsername">Username</label><input type="text" id="signupUsername" required></div><div class="form-group"><label for="signupEmail">Email</label><input type="email" id="signupEmail" required></div><div class="form-group"><label for="signupPassword">Password</label><input type="password" id="signupPassword" required></div><div id="signupError" class="error-message"></div><button type="submit">Create Account</button></form><div class="auth-toggle">Have an account? <a id="showLogin">Login</a></div></div> </div> </div>
+  <div class="container" id="playerContent"> <header class="player-header"> <div class="header-info"><img id="headerLogo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ib3JhbmdlIj48cGF0aCBkPSJNMTMuMDcgMjIuMjFjLS4yMy4yNy0uNTkuNDktLjc2LjQ5cy0uNTQtLjIyLS43Ny0uNDljLTEuNDEtMS41NS0yLjMyLTMuODgtMi4zMi01LjQzIDAtMi4xMSAxLjczLTMuODMgMy44My0zLjgzczMuODQgMS43MiAzLjgzIDMuODNjMCAxLjU0LS45MiAzLjg4LTIuMzIgNS40M3ptLTMuNzItNy4yNGMuMDItMi4xNSAxLjI0LTYuNDIgMy43Mi02LjQyczMuNjkgNC4yNyAzLjcyIDYuNDJjLjA4IDUuNDUtMS45MyA3Ljk3LTMuNzIgNy45N3MtMy44LTUuMDMtMy43Mi03Ljk3ek0xMiA0QzcuMDIgNCAyLjQ4IDcuNzkgMi4xOCAxMi41OGMtLjA3IDEuMTIuNzYgMi4wNiAxLjg4IDIuMDYuMyAwIC41OS0uMDguODQtLjI0bDEuMjQtLjgxYy41MS0uMzMuODEgLS45Mi44MS0xLjU1IDAtLjI2LS4xMS0uNS0uMjgtLjcxLTYuMDktNC4xOS0xLjk2LTkuNTYgMy4zNS05LjU2czQuMjEgMy4zMiA0LjIxIDYuNTFjMCAxLjI0LS4zNSAyLjM2LS45MyAzLjM0LS4yOC40Ny0uMDggMS4wOC40MyAxLjM4bDEuMjYuNzVjLjQxLjI0LjkxLjI0IDEuMzEgMCAzLjM0LTEuOTIgMS45Ni05Ljc5LTQuMDItMTAuNzJDMTIuNjQgMy45MiAxMi4zMyAzLjkyIDEyIDR6Ii8+PC9zdmc+" alt="Logo"><span class="welcome-text">Welcome, <strong id="headerUsername"></strong></span></div> <div class="header-actions"><i class="fas fa-bell"></i><a id="headerWallet" class="nav-link" data-target="walletSection"><i class="fas fa-wallet"></i><span id="headerBalance">₹0</span></a></div> </header> <div id="homeSection" class="page-section"><div class="page-wrapper"><h2 class="section-title">Home</h2><p style="text-align: center; color: var(--accent); margin-bottom: 20px;">▄︻デतुम जब आओगी तो खोया हुआ पाओगी मुझे मेरी तन्हाई में ख़्वाबों के सिवा कुछ भी नहीं मेरे ɨ'ɖ को सजाने की तमन्ना है तुम्हें══━一.</p><div class="social-links-box"><h3 class="social-title">Connect With Us</h3><div class="social-links"><a href="https://youtube.com/@prime_alex_0?si=BnYOhX1cgq3Oz3SK" target="_blank" class="social-link youtube"><i class="fab fa-youtube"></i> YouTube</a><a href="https://www.instagram.com/maurya_jee_003?igsh=YTYwdWRrMHJpYXZ6" target="_blank" class="social-link instagram"><i class="fab fa-instagram"></i> Instagram</a><a href="https://t.me/xmauryajee" target="_blank" class="social-link telegram"><i class="fab fa-telegram"></i> Telegram</a></div></div></div></div> <div id="challengesSection" class="page-section"><h2 class="section-title">CHALLENGES</h2><div id="matchesContainer" class="matches-container"></div></div> <div id="walletSection" class="page-section"><div class="page-wrapper"><h2 class="section-title">Your Wallet</h2><div class="wallet-summary"><div class="wallet-balance" id="walletBalance">₹0</div><div class="wallet-actions"><button id="addCashBtn" class="add-cash-btn"><i class="fas fa-plus-circle"></i> Add Cash</button><button id="withdrawBtn" class="withdraw-btn"><i class="fas fa-rupee-sign"></i> Withdraw</button></div></div><div class="transaction-history"><h3 style="text-align: center; margin: 20px 0;">Transaction History</h3><div id="transactionList"></div></div></div></div> <div id="profileSection" class="page-section"><div class="page-wrapper"><h2 class="section-title">Profile</h2><div class="profile-info"><div class="avatar"><i class="fas fa-user-circle"></i></div><h3 id="profileUsername"></h3><p id="profileEmail"></p><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div></div> </div>
+  <nav class="bottom-nav" id="playerNav" style="display: none;"> <a class="nav-link" data-target="homeSection"><i class="fas fa-home"></i><span>Home</span></a> <a class="nav-link" data-target="challengesSection"><i class="fas fa-gamepad"></i><span>Challenges</span></a> <a class="nav-link" data-target="walletSection"><i class="fas fa-wallet"></i><span>Wallet</span></a> <a class="nav-link" data-target="profileSection"><i class="fas fa-user"></i><span>Profile</span></a> </nav>
+  <div id="addCashModal" class="modal"><div class="modal-content"><span class="close" data-modal-id="addCashModal">×</span><h2 style="color:var(--primary); text-align:center; margin-bottom: 20px;">Add Cash</h2><div class="qr-box"><h3>Scan to Pay</h3><img src="https://api.qrserver.com/v1/create-qr-code/?data=upi://pay?pa=kajal9241@axl&pn=Kajal&cu=INR" alt="UPI QR Code"></div><div class="upi-container"><div><p>UPI ID:</p><div class="upi-id">kajal9241@axl</div></div><button id="copyUpiBtn" type="button" class="copy-btn"><i class="fas fa-copy"></i> Copy</button></div><hr style="border-color: rgba(156, 39, 176, 0.3); margin: 20px 0;"><div class="form-group"><label for="addCashAmount">Amount Sent (₹):</label><input type="number" id="addCashAmount" required></div><div class="form-group"><label for="addCashProof">Transaction ID / UTR:</label><input type="text" id="addCashProof" required></div><button id="requestAddCashBtn" type="button" class="submit-btn">Submit Request</button></div></div>
+  <div id="withdrawModal" class="modal"><div class="modal-content"><span class="close" data-modal-id="withdrawModal">×</span><h2 style="color:var(--primary); text-align:center; margin-bottom: 20px;">Withdraw Funds</h2><div class="form-group"><label for="withdrawAmount">Amount (₹):</label><input type="number" id="withdrawAmount" placeholder="e.g. 500" min="50" required></div><div class="form-group"><label for="withdrawUpi">UPI ID:</label><input type="text" id="withdrawUpi" placeholder="yourname@upi" required></div><button id="requestWithdrawalBtn" type="button" class="submit-btn"><i class="fas fa-paper-plane"></i> Submit Request</button><div class="withdraw-note" style="text-align:center; color:#aaa; margin-top:15px;"><p><i class="fas fa-info-circle"></i> Processed within 24 hours</p><p>Minimum withdrawal amount: ₹50</p></div></div></div>
+  <div id="roomDetailsModal" class="modal"><div class="modal-content"><span class="close" data-modal-id="roomDetailsModal">×</span><h2 style="color:var(--accent); text-align:center; margin-bottom: 25px;">Match Details</h2><p style="text-align:center; color: var(--gray-text); margin-bottom: 20px;">Here are your match details. Please join before the match starts.</p><div class="room-detail-item"><label>Room ID</label><div class="room-detail-value"><span id="modalRoomId"></span><button class="copy-btn" data-copy-id="modalRoomId"><i class="fas fa-copy"></i> Copy</button></div></div><div class="room-detail-item"><label>Password</label><div class="room-detail-value"><span id="modalRoomPassword"></span><button class="copy-btn" data-copy-id="modalRoomPassword"><i class="fas fa-copy"></i> Copy</button></div></div></div></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5rugzHuBxLs3-p7ufYPmcAazLnDyYkHM",
+            authDomain: "mg-esports-1b605.firebaseapp.com",
+            databaseURL: "https://mg-esports-1b605-default-rtdb.firebaseio.com",
+            projectId: "mg-esports-1b605",
+            storageBucket: "mg-esports-1b605.appspot.com",
+            messagingSenderId: "165334782147",
+            appId: "1:165334782147:web:ec3f87f77e78156b1dd276",
+            measurementId: "G-TJ5B8V55L7"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentUserData = null;
+        let allMatches = [];
+        let userTransactions = [];
+
+        const showToast = (message, isError = false) => {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast'; 
+            if (isError) {
+                toast.classList.add('error');
+            }
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        };
+        
+        const openModal = (modalId) => {
+            const modal = document.getElementById(modalId);
+            if(modal) modal.style.display = 'block';
+        };
+
+        const closeModal = (modalId) => {
+            const modal = document.getElementById(modalId);
+            if(modal) modal.style.display = 'none';
+        };
+
+        const showPlayerSection = (sectionIdToShow) => {
+            document.querySelectorAll('.page-section').forEach(s => s.style.display = 'none');
+            document.getElementById(sectionIdToShow).style.display = 'block';
+            
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            const activeLink = document.querySelector(`.nav-link[data-target="${sectionIdToShow}"]`);
+            if (activeLink) activeLink.classList.add('active');
+
+            if(sectionIdToShow === 'walletSection') updateWalletDisplay();
+            if(sectionIdToShow === 'challengesSection') loadLiveMatches();
+            if(sectionIdToShow === 'profileSection') loadProfile();
+        };
+
+        const updateWalletDisplay = () => {
+            if (!currentUserData) return;
+            const balance = currentUserData.balance || 0;
+            document.getElementById('walletBalance').textContent = `₹${balance}`;
+            document.getElementById('headerBalance').textContent = `₹${balance}`;
+            
+            const list = document.getElementById('transactionList');
+            list.innerHTML = '';
+            
+            const sortedTransactions = [...userTransactions].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            if (sortedTransactions.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color: #888;">No transactions yet.</p>';
+            } else {
+                sortedTransactions.forEach(tx => {
+                    const item = document.createElement('div');
+                    item.className = 'transaction-item';
+
+                    let detailsText = tx.type;
+                    if (tx.type === 'deposit') detailsText = `Deposit Req. [UTR: ${tx.utr}]`;
+                    else if (tx.type === 'withdrawal') detailsText = `Withdrawal to ${tx.upi}`;
+                    else if (tx.type === 'entry_fee') detailsText = tx.details;
+
+                    const isCredit = tx.type === 'deposit' && tx.status === 'approved';
+                    const amountClass = isCredit ? 'positive' : 'negative';
+                    const amountSign = isCredit ? '+' : '-';
+
+                    item.innerHTML = `
+                        <div>
+                            <div>${detailsText}</div>
+                            <div class="transaction-status status-${tx.status}">${tx.status}</div>
+                        </div>
+                        <div class="transaction-amount ${amountClass}">${amountSign}₹${tx.amount}</div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+        };
+
+        const loadProfile = () => {
+            if (!currentUserData) return;
+            document.getElementById('profileUsername').textContent = currentUserData.username;
+            document.getElementById('profileEmail').textContent = currentUserData.email;
+        };
+
+        const joinMatch = (match) => {
+            if (currentUserData.balance < match.entryFee) {
+                showToast(`Insufficient balance. You need ₹${match.entryFee}`, true);
+                showPlayerSection('walletSection');
+                openModal('addCashModal');
+                return;
+            }
+
+            const matchRef = db.ref('matches/' + match.id);
+            const userRef = db.ref('users/' + auth.currentUser.uid);
+            const paymentsRef = db.ref('payments');
+
+            matchRef.child('spotsFilled').transaction(currentSpots => {
+                if (currentSpots >= match.totalSpots) return; 
+                return (currentSpots || 0) + 1;
+            }).then(result => {
+                if (!result.committed) {
+                    showToast("Sorry, the match just filled up!", true);
+                    return;
+                }
+                
+                userRef.child('balance').transaction(currentBalance => (currentBalance || 0) - match.entryFee);
+                
+                const newPaymentKey = paymentsRef.push().key;
+                const entryTx = { id: newPaymentKey, userId: auth.currentUser.uid, amount: match.entryFee, type: 'entry_fee', matchId: match.id, details: `Joined '${match.name}'`, status: 'approved', date: new Date().toISOString() };
+                paymentsRef.child(newPaymentKey).set(entryTx);
+                
+                showToast(`Joined '${match.name}' successfully!`);
+            }).catch(error => {
+                showToast("An error occurred. Please try again.", true);
+                console.error("Join match error:", error);
+            });
+        };
+        
+        const showRoomDetails = async (match) => {
+            const snapshot = await db.ref('matches/' + match.id).get();
+            const latestMatch = snapshot.val();
+            
+            if (latestMatch && latestMatch.roomId && latestMatch.password) {
+                document.getElementById('modalRoomId').textContent = latestMatch.roomId;
+                document.getElementById('modalRoomPassword').textContent = latestMatch.password;
+                openModal('roomDetailsModal');
+            } else {
+                showToast("Room details will be available before match time.", true);
+            }
+        };
+
+        const getMatchStatusAndFormattedDate = (matchDateString) => {
+            const now = new Date();
+            const matchDate = new Date(matchDateString);
+            const matchEndDate = new Date(matchDate.getTime() + (60 * 60 * 1000));
+            
+            let status = now > matchEndDate ? 'ENDED' : (now >= matchDate ? 'LIVE' : 'UPCOMING');
+            let formattedDate;
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1);
+
+            const timeOptions = { hour: 'numeric', minute: 'numeric', hour12: true };
+            const timeString = matchDate.toLocaleTimeString('en-IN', timeOptions);
+
+            if (matchDate.toDateString() === today.toDateString()) {
+                formattedDate = `Today, ${timeString}`;
+            } else if (matchDate.toDateString() === tomorrow.toDateString()) {
+                formattedDate = `Tomorrow, ${timeString}`;
+            } else {
+                const dateOptions = { day: 'numeric', month: 'short' };
+                formattedDate = `${matchDate.toLocaleDateString('en-IN', dateOptions)}, ${timeString}`;
+            }
+            return { status, formattedDate };
+        };
+
+        const loadLiveMatches = () => {
+            const container = document.getElementById('matchesContainer');
+            if (!container || !currentUserData) return;
+            container.innerHTML = '';
+            
+            const sortedMatches = [...allMatches].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            sortedMatches.forEach(match => {
+                const { status, formattedDate } = getMatchStatusAndFormattedDate(match.date);
+                const spotsLeft = match.totalSpots - (match.spotsFilled || 0);
+                const progress = ((match.spotsFilled || 0) / match.totalSpots) * 100;
+                const hasJoined = userTransactions.some(tx => tx.type === 'entry_fee' && tx.matchId === match.id);
+
+                const card = document.createElement('div');
+                card.className = 'match-card';
+                card.innerHTML = `
+                    <div class="match-header">
+                        <h3 class="match-title"><i class="fas fa-gamepad"></i> ${match.name}</h3>
+                        <span class="match-status ${status.toLowerCase()}">${status}</span>
+                    </div>
+                    <div class="match-time"><i class="fas fa-calendar-alt"></i><span>${formattedDate}</span></div>
+                    <div class="match-details">
+                        <div class="detail-item"><h4>Prize Pool</h4><p><i class="fas fa-trophy"></i> ₹${match.prizePool}</p></div>
+                        <div class="detail-item"><h4>Per Kill</h4><p>₹${match.perKill}</p></div>
+                        <div class="detail-item"><h4>Entry Fee</h4><p>₹${match.entryFee}</p></div>
+                    </div>
+                    <div class="match-spots">
+                        <p><span class="spots-highlight">${spotsLeft}</span> Spots Left (${match.spotsFilled || 0}/${match.totalSpots})</p>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%;"></div></div>
+                    </div>
+                `;
+
+                const actionButton = document.createElement('button');
+                actionButton.className = 'match-action-btn';
+
+                if (hasJoined) {
+                    if (status === 'LIVE') {
+                        actionButton.innerHTML = `<i class="fas fa-eye"></i> Get Details`;
+                        actionButton.classList.add('get-details-btn');
+                        actionButton.addEventListener('click', () => showRoomDetails(match));
+                    } else {
+                        actionButton.innerHTML = `<i class="fas fa-check-circle"></i> Joined`;
+                        actionButton.classList.add('joined-btn');
+                        actionButton.disabled = true;
+                    }
+                } else if (status === 'ENDED' || spotsLeft <= 0) {
+                    actionButton.innerHTML = `<i class="fas fa-trophy"></i> ${status === 'ENDED' ? 'Match Over' : 'Match Full'}`;
+                    actionButton.disabled = true;
+                } else {
+                    actionButton.innerHTML = `<i class="fas fa-sign-in-alt"></i> Join Now`;
+                    actionButton.addEventListener('click', () => joinMatch(match));
+                }
+                
+                card.appendChild(actionButton);
+                container.appendChild(card);
+            });
+        };
+
+        const setupEventListeners = () => {
+            // Auth form switching
+            document.getElementById('showSignup').addEventListener('click', () => {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'block';
+            });
+            document.getElementById('showLogin').addEventListener('click', () => {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('signupForm').style.display = 'none';
+            });
+
+            // Auth form submission
+            document.getElementById('loginFormElement').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const pass = document.getElementById('loginPassword').value;
+                auth.signInWithEmailAndPassword(email, pass)
+                    .catch(error => showToast(error.message, true));
+            });
+
+            document.getElementById('signupFormElement').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = document.getElementById('signupUsername').value.trim();
+                const email = document.getElementById('signupEmail').value;
+                const pass = document.getElementById('signupPassword').value;
+                if (username.length < 3) return showToast("Username must be at least 3 characters.", true);
+
+                auth.createUserWithEmailAndPassword(email, pass)
+                    .then(userCredential => {
+                        const user = userCredential.user;
+                        return db.ref('users/' + user.uid).set({
+                            username: username,
+                            email: email,
+                            balance: 0
+                        });
+                    })
+                    .catch(error => showToast(error.message, true));
+            });
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
+
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => showPlayerSection(link.dataset.target));
+            });
+
+            // Modals
+            document.querySelectorAll('.close').forEach(btn => {
+                btn.addEventListener('click', () => closeModal(btn.dataset.modalId));
+            });
+            document.getElementById('addCashBtn').addEventListener('click', () => openModal('addCashModal'));
+            document.getElementById('withdrawBtn').addEventListener('click', () => {
+                 if (!currentUserData || currentUserData.balance < 50) return showToast("Minimum withdrawal is ₹50", true);
+                 openModal('withdrawModal');
+            });
+            
+            // Wallet Actions
+            document.getElementById('requestAddCashBtn').addEventListener('click', () => {
+                const amount = parseInt(document.getElementById('addCashAmount').value);
+                const utr = document.getElementById('addCashProof').value.trim();
+                if (isNaN(amount) || amount <= 0) return showToast("Please enter a valid amount.", true);
+                if (!utr) return showToast("Please enter your transaction ID.", true);
+
+                const newPaymentKey = db.ref('payments').push().key;
+                const payment = { id: newPaymentKey, userId: auth.currentUser.uid, username: currentUserData.username, amount, utr, type: 'deposit', status: 'pending', date: new Date().toISOString()};
+                
+                db.ref('payments/' + newPaymentKey).set(payment).then(() => {
+                    closeModal('addCashModal');
+                    showToast("Add cash request sent! Please wait for admin approval.");
+                });
+            });
+
+            document.getElementById('requestWithdrawalBtn').addEventListener('click', () => {
+                const amount = parseInt(document.getElementById('withdrawAmount').value);
+                const upi = document.getElementById('withdrawUpi').value.trim();
+                if (isNaN(amount) || amount < 50) return showToast(`Minimum withdrawal is ₹50`, true);
+                if (amount > currentUserData.balance) return showToast("Insufficient balance", true);
+                if (!upi.includes('@')) return showToast("Please enter a valid UPI ID", true);
+
+                const userRef = db.ref('users/' + auth.currentUser.uid);
+                userRef.child('balance').transaction(currentBalance => {
+                    if (currentBalance < amount) return; 
+                    return currentBalance - amount;
+                }).then(result => {
+                    if (!result.committed) return showToast("Failed to process withdrawal.", true);
+                    
+                    const newPaymentKey = db.ref('payments').push().key;
+                    const withdrawal = { id: newPaymentKey, userId: auth.currentUser.uid, username: currentUserData.username, amount, upi, type: 'withdrawal', status: 'pending', date: new Date().toISOString() };
+                    db.ref('payments/' + newPaymentKey).set(withdrawal).then(() => {
+                        closeModal('withdrawModal');
+                        showToast(`Withdrawal request of ₹${amount} submitted`);
+                    });
+                });
+            });
+            
+            // Copy buttons
+            document.getElementById('copyUpiBtn').addEventListener('click', (e) => {
+                navigator.clipboard.writeText("kajal9241@axl").then(() => {
+                    e.target.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    setTimeout(() => { e.target.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+                });
+            });
+
+            document.querySelectorAll('#roomDetailsModal .copy-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const textToCopy = document.getElementById(btn.dataset.copyId).textContent;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        const originalHTML = btn.innerHTML;
+                        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+                    });
+                });
+            });
+        };
+
+        // Auth state change listener
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                const userRef = db.ref('users/' + user.uid);
+                userRef.on('value', snapshot => {
+                    currentUserData = snapshot.val();
+                    if (currentUserData) {
+                        document.getElementById('authContainer').style.display = 'none';
+                        document.getElementById('playerContent').style.display = 'block';
+                        document.getElementById('playerNav').style.display = 'flex';
+                        document.getElementById('headerUsername').textContent = currentUserData.username;
+                        showPlayerSection('homeSection'); 
+                        updateWalletDisplay();
+                    }
+                });
+                
+                db.ref('matches').on('value', snapshot => {
+                    const matchesData = snapshot.val() || {};
+                    allMatches = Object.keys(matchesData).map(key => ({ ...matchesData[key], id: key }));
+                    if (document.querySelector('#challengesSection').style.display === 'block') {
+                       loadLiveMatches();
+                    }
+                });
+
+                db.ref('payments').orderByChild('userId').equalTo(user.uid).on('value', snapshot => {
+                    const paymentsData = snapshot.val() || {};
+                    userTransactions = Object.values(paymentsData);
+                    if (document.querySelector('#walletSection').style.display === 'block') {
+                        updateWalletDisplay();
+                    }
+                    if (document.querySelector('#challengesSection').style.display === 'block') {
+                       loadLiveMatches();
+                    }
+                });
+
+            } else {
+                currentUserData = null;
+                allMatches = [];
+                userTransactions = [];
+                db.ref().off(); 
+                
+                document.getElementById('authContainer').style.display = 'flex';
+                document.getElementById('playerContent').style.display = 'none';
+                document.getElementById('playerNav').style.display = 'none';
+            }
+        });
+
+        // Initialize everything
+        setupEventListeners();
+    });
+</script>
+
+</body>
+</html>
