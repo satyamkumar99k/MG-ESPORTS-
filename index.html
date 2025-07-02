@@ -14,201 +14,89 @@
             --dark: #0F0F1B;
             --gradient: linear-gradient(135deg, #FF5F6D, #FFC371);
         }
-        
         body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: var(--dark);
-            color: var(--light);
-            min-height: 100vh;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(255, 95, 109, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 20%);
+            font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background: var(--dark);
+            color: var(--light); min-height: 100vh;
+            background-image: radial-gradient(circle at 10% 20%, rgba(255, 95, 109, 0.1) 0%, transparent 20%),
+                              radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 20%);
         }
-        
         .container {
-            max-width: 900px;
-            width: 90%;
-            margin: 2rem auto;
-            padding: 2.5rem;
-            background: rgba(26, 26, 46, 0.8);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
+            max-width: 900px; width: 90%; margin: 2rem auto; padding: 2.5rem;
+            background: rgba(26, 26, 46, 0.8); backdrop-filter: blur(12px);
+            border-radius: 20px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08); position: relative;
+            overflow: hidden; z-index: 1;
         }
-
-        .logo-container {
-            text-align: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .logo-img {
-            width: 120px;
-            height: auto;
-            filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.4));
-        }
-        
+        .logo-container { text-align: center; margin-bottom: 0.5rem; }
+        .logo-img { width: 120px; height: auto; filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.4)); }
         h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.8rem;
-            margin-top: 0;
-            margin-bottom: 1rem;
-            color: var(--light);
-            text-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
-            letter-spacing: 1px;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center;
+            font-family: 'Orbitron', sans-serif; font-size: 2.8rem; margin-top: 0;
+            margin-bottom: 1rem; color: var(--light);
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.5); letter-spacing: 1px;
+            background: var(--gradient); -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; text-align: center;
         }
-        
         p {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-            line-height: 1.6;
-            text-align: center;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9; line-height: 1.6;
+            text-align: center; max-width: 600px; margin-left: auto; margin-right: auto;
         }
-        
         .slider-container {
-            width: 100%;
-            max-width: 100%; 
-            margin: 0 auto 3rem;
-            position: relative;
-            overflow: hidden;
-            border-radius: 16px;
+            width: 100%; max-width: 100%; margin: 0 auto 3rem;
+            position: relative; overflow: hidden; border-radius: 16px;
         }
-        
-        .slider {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-            height: 580px; 
-        }
-        
+        .slider { display: flex; transition: transform 0.5s ease-in-out; height: 580px; }
         .slide {
-            min-width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: transparent; 
+            min-width: 100%; height: 100%; display: flex; align-items: center;
+            justify-content: center; background-color: transparent; 
         }
-        
-        .slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        
+        .slide img { width: 100%; height: 100%; object-fit: contain; }
         .slider-nav {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 2;
+            position: absolute; bottom: 20px; left: 50%;
+            transform: translateX(-50%); display: flex; gap: 10px; z-index: 2;
         }
-        
         .slider-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            cursor: pointer;
-            transition: background 0.3s;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5); cursor: pointer; transition: background 0.3s;
         }
-        
-        .slider-dot.active {
-            background: var(--primary);
-        }
-        
-        .button-container {
-            text-align: center;
-            margin-top: 2rem;
-        }
-        
+        .slider-dot.active { background: var(--primary); }
+        .button-container { text-align: center; margin-top: 2rem; }
         .download-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 15px 35px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: white;
-            background: var(--gradient);
-            border: none;
-            border-radius: 50px;
-            text-decoration: none;
-            transition: all 0.3s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 15px 35px; font-size: 1.2rem; font-weight: 600;
+            color: white; background: var(--gradient); border: none;
+            border-radius: 50px; text-decoration: none; transition: all 0.3s ease;
             box-shadow: 0 6px 20px rgba(255, 95, 109, 0.4);
         }
-        
         .download-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255, 95, 109, 0.6);
+            transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255, 95, 109, 0.6);
         }
-        
-        .download-button i {
-            margin-right: 10px;
-            font-size: 1.3rem;
-        }
-        
+        .download-button i { margin-right: 10px; font-size: 1.3rem; }
         .version {
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.6);
-            text-align: center;
+            margin-top: 1.5rem; font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6); text-align: center;
         }
-        
         .version::before, .version::after {
-            content: '';
-            display: inline-block;
-            width: 50px;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.2);
-            margin: 0 15px;
-            vertical-align: middle;
+            content: ''; display: inline-block; width: 50px; height: 1px;
+            background: rgba(255, 255, 255, 0.2); margin: 0 15px; vertical-align: middle;
         }
-        
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2.2rem;
-            }
-            .slider {
-                height: 450px; 
-            }
+            h1 { font-size: 2.2rem; }
+            .slider { height: 450px; }
         }
-        
         @media (max-width: 576px) {
-            .slider {
-                height: 400px;
-            }
-            .version::before, .version::after {
-                width: 30px;
-            }
+            .slider { height: 400px; }
+            .version::before, .version::after { width: 30px; }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        
         <div class="logo-container">
             <img src="https://i.postimg.cc/qvX3pM0v/1000008568-removebg-preview.png" alt="MG ESPORTS Logo" class="logo-img">
         </div>
-
         <h1>MG ESPORTS</h1>
         <p>Join the ultimate gaming experience. Download the official MG ESPORTS app now and compete with players worldwide!</p>
-        
         <div class="slider-container">
             <div class="slider" id="slider">
                 <div class="slide">
@@ -223,17 +111,13 @@
                 <div class="slider-dot"></div>
             </div>
         </div>
-        
         <div class="button-container">
-            <!-- ===== YAHAN LINK THEEK KAR DIYA GAYA HAI ===== -->
-            <a href="https://github.com/satyamkumar99k/MG-ESPORTS-/releases/latest/download/MG.ESPORTS.apk" class="download-button">
+            <a href="https://github.com/satyamkumar99k/MG-ESPORTS-/releases/latest/download/MG-ESPORTS.apk" class="download-button">
                 <i class="fas fa-download"></i> Download Now
             </a>
-            <!-- ===== YAHAN SIZE BHI THEEK KAR DIYA GAYA HAI ===== -->
             <p class="version">Version 1.0 | 5.27 MB</p>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const slider = document.getElementById('slider');
@@ -241,20 +125,16 @@
             const dots = document.querySelectorAll('.slider-dot');
             let currentIndex = 0;
             const slideCount = slides.length;
-            
             function autoSlide() {
                 currentIndex = (currentIndex + 1) % slideCount;
                 updateSlider();
             }
-            
             function updateSlider() {
                 slider.style.transform = `translateX(-${currentIndex * 100}%)`;
-                
                 dots.forEach((dot, index) => {
                     dot.classList.toggle('active', index === currentIndex);
                 });
             }
-            
             dots.forEach((dot, index) => {
                 dot.addEventListener('click', () => {
                     currentIndex = index;
@@ -262,18 +142,14 @@
                     resetTimer();
                 });
             });
-            
             function resetTimer() {
                 clearInterval(slideInterval);
                 slideInterval = setInterval(autoSlide, 3000);
             }
-            
             let slideInterval = setInterval(autoSlide, 3000);
-            
             slider.addEventListener('mouseenter', () => {
                 clearInterval(slideInterval);
             });
-            
             slider.addEventListener('mouseleave', () => {
                 slideInterval = setInterval(autoSlide, 3000);
             });
